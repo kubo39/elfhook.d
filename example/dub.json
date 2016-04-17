@@ -1,0 +1,9 @@
+{
+    "name": "example",
+    "authors": ["kubo39"],
+    "preBuildCommands": ["gcc -g -shared -fPIC -o liboriginal.so source/original.c"],
+    "libs": ["original"],
+    "dependencies": {
+        "elfhook": {"version": "~master", "path": "../"}
+    }
+}

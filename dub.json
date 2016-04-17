@@ -1,0 +1,6 @@
+{
+    "name": "elfhook",
+    "authors": ["kubo39"],
+    "buildType": "staticLibrary",
+    "targetPath": "build"
+}
