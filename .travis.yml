@@ -1,0 +1,9 @@
+language: d
+
+d:
+  - dmd
+  - ldc
+  - gdc
+
+script:
+  - dub build --compiler=${DC}
