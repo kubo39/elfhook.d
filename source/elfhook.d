@@ -13,7 +13,6 @@ import core.stdc.stdio;
 import core.stdc.errno;
 
 version(linux):
-extern(C):
 @system:
 @nogc:
 
