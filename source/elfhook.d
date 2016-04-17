@@ -15,6 +15,7 @@ import core.stdc.errno;
 version(linux):
 extern(C):
 @system:
+@nogc:
 
 version(X86_64)
 {
