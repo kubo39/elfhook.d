@@ -315,8 +315,6 @@ void* elfHook(const char* filename, const void* address, const char* name, const
     return original;
   }
 
-  import std.stdio;
-
   rel_plt_table = cast(Elf_Rel*) ((cast(size_t) address) + rel_plt.sh_addr);
   rel_plt_amount = rel_plt.sh_size / Elf_Rel.sizeof;
 
