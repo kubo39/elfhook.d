@@ -12,9 +12,10 @@ import core.stdc.stdlib;
 import core.stdc.stdio;
 import core.stdc.errno;
 
+import std.exception;
+
 version(linux):
 @system:
-@nogc:
 
 version(X86_64)
 {
@@ -39,115 +40,66 @@ else version(X86)
 else static assert(false, "Unsupported architecture.");
 
 
-void* libraryAddressByHandle(const void* address)
-{
-  if (address is null) {
-    return null;
-  }
-  return cast(void*) *cast(const size_t *) address;
-}
-
-
-int readHeader(int fd, ref Elf_Ehdr* header)
+void readHeader(int fd, ref Elf_Ehdr* header)
 {
   header = cast(Elf_Ehdr*) malloc(Elf_Ehdr.sizeof);
-  if (header is null) {
-    return errno;
-  }
-  if (lseek(fd, 0, SEEK_SET) < 0) {
-    free(header);
-    return errno;
-  }
-  if (read(fd, header, Elf_Ehdr.sizeof) < 0) {
-    free(header);
-    return errno = EINVAL;
-  }
-  return 0;
+  errnoEnforce(header !is null, "failed allocate Elf_Ehdr.");
+  scope (failure) free(header);
+
+  errnoEnforce(lseek(fd, 0, SEEK_SET) >= 0, "failed lseek(2).");
+  errnoEnforce(read(fd, header, Elf_Ehdr.sizeof) >= 0, "failed read(2).");
 }
 
 
-int readSectionTable(int fd, const Elf_Ehdr* header, ref Elf_Shdr* table)
+void readSectionTable(int fd, const Elf_Ehdr* header, ref Elf_Shdr* table)
 {
-  if (header is null) {
-    return EINVAL;
-  }
+  assert(header !is null);
+
   size_t size = header.e_shnum * Elf_Shdr.sizeof;
   table = cast(Elf_Shdr*) malloc(size);
-  if (table is null) {
-    return errno;
-  }
+  errnoEnforce(table !is null, "failed to allocate Elf_shdr.");
+  scope(failure) free(table);
 
-  if (lseek(fd, header.e_shoff, SEEK_SET) < 0) {
-    free(table);
-    return errno;
-  }
-
-  if (read(fd, table, size) <= 0) {
-    free(table);
-    return errno = EINVAL;
-  }
-
-  return 0;
+  errnoEnforce(lseek(fd, header.e_shoff, SEEK_SET) >= 0, "failed lseek(2).");
+  errnoEnforce(read(fd, table, size) >= 0, "failed read(2).");
 }
 
 
-int readStringTable(int fd, const Elf_Shdr* section, ref char* strings)
+void readStringTable(int fd, const Elf_Shdr* section, ref char* strings)
 {
-  if (section is null) {
-    return EINVAL;
-  }
+  assert(section !is null);
+
   strings = cast(char*) malloc(section.sh_size);
-  if (strings is null) {
-    return errno;
-  }
-  if (lseek(fd, section.sh_offset, SEEK_SET) < 0) {
-    free(cast(void*) strings);
-    return errno;
-  }
+  errnoEnforce(strings !is null, "failed to allocate string table.");
+  scope(failure) free(strings);
 
-  if (read(fd, cast(char*) strings, section.sh_size) <= 0) {
-    free(cast(void*) strings);
-    return errno = EINVAL;
-  }
-
-  return 0;
+  errnoEnforce(lseek(fd, section.sh_offset, SEEK_SET) >= 0, "failed lseek(2).");
+  errnoEnforce(read(fd, strings, section.sh_size) >= 0, "failed read(2).");
 }
 
-int readSymbolTable(int fd, const Elf_Shdr* section, ref Elf_Sym* table)
+
+void readSymbolTable(int fd, const Elf_Shdr* section, ref Elf_Sym* table)
 {
-  if (section is null) {
-    return EINVAL;
-  }
+  assert(section !is null);
 
   table = cast (Elf_Sym*) malloc(section.sh_size);
-  if (table is null) {
-    return errno;
-  }
+  errnoEnforce(table !is null, "failed to allocate symbol table.");
+  scope(failure) free(table);
 
-  if (lseek(fd, section.sh_offset, SEEK_SET) < 0) {
-    free(table);
-    return errno;
-  }
-
-  if (read(fd, table, section.sh_size) <= 0) {
-    free(table);
-    return errno = EINVAL;
-  }
-  return 0;
+  errnoEnforce(lseek(fd, section.sh_offset, SEEK_SET) >= 0, "failed lseek(2).");
+  errnoEnforce(read(fd, table, section.sh_size) >= 0, "failed read(2).");
 }
 
 
-int sectionByIndex(int fd, const size_t index, ref Elf_Shdr* section)
+void sectionByIndex(int fd, const size_t index, ref Elf_Shdr* section)
 {
   Elf_Ehdr* header;
   Elf_Shdr* sections;
 
   section = null;
 
-  if (readHeader(fd, header) ||
-      readSectionTable(fd, header, sections)) {
-    return errno;
-  }
+  readHeader(fd, header);
+  readSectionTable(fd, header, sections);
 
   scope(exit) {
     free(header);
@@ -156,15 +108,13 @@ int sectionByIndex(int fd, const size_t index, ref Elf_Shdr* section)
 
   if (index < header.e_shnum) {
     section = cast(Elf_Shdr*) malloc(Elf_Shdr.sizeof);
-    if (section is null) {
-      return errno;
-    }
+    errnoEnforce(section !is null, "failed to allocate section.");
     memcpy(section, sections + index, Elf_Shdr.sizeof);
   }
   else {
-    return EINVAL;
+    errno = EINVAL;
+    errnoEnforce(false, "index is too large.");
   }
-  return 0;
 }
 
 
@@ -175,10 +125,8 @@ int sectionByType(int fd, const size_t sectionType, ref Elf_Shdr* section)
 
   section = null;
 
-  if (readHeader(fd, header) ||
-      readSectionTable(fd, header, sections)) {
-    return errno;
-  }
+  readHeader(fd, header);
+  readSectionTable(fd, header, sections);
 
   scope(exit) {
     free(header);
@@ -188,9 +136,7 @@ int sectionByType(int fd, const size_t sectionType, ref Elf_Shdr* section)
   foreach (i; 0 .. header.e_shnum) {
     if (sectionType == sections[i].sh_type) {
       section = cast(Elf_Shdr*) malloc(Elf_Shdr.sizeof);
-      if (section is null) {
-        return errno;
-      }
+      errnoEnforce(section !is null, "failed to allocate section.");
       memcpy(section, sections + i, Elf_Shdr.sizeof);
       break;
     }
@@ -207,24 +153,20 @@ int sectionByName(int fd, const char* sectionName, ref Elf_Shdr* section)
 
   section = null;
 
-  if (readHeader(fd, header) ||
-      readSectionTable(fd, header, sections) ||
-      readStringTable(fd, cast(const) &sections[header.e_shstrndx], strings)) {
-    return errno;
-  }
+  readHeader(fd, header);
+  readSectionTable(fd, header, sections);
+  readStringTable(fd, cast(const) &sections[header.e_shstrndx], strings);
 
   scope(exit) {
     free(header);
     free(sections);
-    free(cast(void*) strings);
+    free(strings);
   }
 
   foreach (i; 0 .. header.e_shnum) {
     if (!strcmp(sectionName, &strings[sections[i].sh_name])) {
       section = cast(Elf_Shdr*) malloc(Elf_Shdr.sizeof);
-      if (section is null) {
-        return errno;
-      }
+      errnoEnforce(section !is null, "failed to allocate section.");
       memcpy(section, sections + i, Elf_Shdr.sizeof);
       break;
     }
@@ -242,15 +184,13 @@ int symbolByName(int fd, Elf_Shdr* section, const char* name, ref Elf_Sym* symbo
   symbol = null;
   index = 0;
 
-  if (sectionByIndex(fd, section.sh_link, stringsSection) ||
-      readStringTable(fd, cast(const) stringsSection, strings) ||
-      readSymbolTable(fd, section, symbols)) {
-    return errno;
-  }
+  sectionByIndex(fd, section.sh_link, stringsSection);
+  readStringTable(fd, cast(const) stringsSection, strings);
+  readSymbolTable(fd, section, symbols);
 
   scope(exit) {
     free(stringsSection);
-    free(cast(void*) strings);
+    free(strings);
     free(symbols);
   }
 
@@ -259,9 +199,7 @@ int symbolByName(int fd, Elf_Shdr* section, const char* name, ref Elf_Sym* symbo
   foreach (i; 0 .. amount) {
     if (!strcmp(name, &strings[symbols[i].st_name])) {
       symbol = cast(Elf_Sym*) malloc(Elf_Sym.sizeof);
-      if (symbol is null) {
-        return errno;
-      }
+      errnoEnforce(symbol !is null, "failed to allocate symbol.");
       memcpy(symbol, symbols + i, Elf_Sym.sizeof);
       index = i;
       break;
@@ -269,6 +207,7 @@ int symbolByName(int fd, Elf_Shdr* section, const char* name, ref Elf_Sym* symbo
   }
   return 0;
 }
+
 
 void* elfHook(const char* filename, const void* address, const char* name, const void* substitution)
 {
@@ -377,21 +316,18 @@ void* elfHook(const char* filename, const void* address, const char* name, const
 
 void* hook(const char* filename, const char* functionName, const void* substitutionAddress)
 {
-  if (filename is null) {
-    return null;
-  }
+  assert(filename !is null, "No file given.");
 
   void* handle = dlopen(filename, RTLD_LAZY);
   if (handle is null) {
     const char* errorMsg = dlerror();
     if (errorMsg !is null) {
-      perror(errorMsg);
+      errnoEnforce(false, cast(string) errorMsg[0 .. strlen(errorMsg)]);
     }
-    return null;
+    errnoEnforce(false, "failed to dlopen(3) by unknown reason.");
   }
-  void* address = libraryAddressByHandle(handle);
-  if (address is null) {
-    return null;
-  }
+
+  void* address = cast(void*) *cast(const size_t *) handle;
+  assert(address !is null, "failed to get address that libarary loaded.");
   return elfHook(filename, address, functionName, substitutionAddress);
 }
