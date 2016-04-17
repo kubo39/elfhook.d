@@ -383,6 +383,10 @@ void* hook(const char* filename, const char* functionName, const void* substitut
 
   void* handle = dlopen(filename, RTLD_LAZY);
   if (handle is null) {
+    const char* errorMsg = dlerror();
+    if (errorMsg !is null) {
+      perror(errorMsg);
+    }
     return null;
   }
   void* address = libraryAddressByHandle(handle);
