@@ -17,6 +17,7 @@ void main()
   auto so = getcwd() ~ "/liboriginal.so\0";
   const char* filename = so.ptr;
   const char* funcName = "puts\0".ptr;
-  auto x = hook(filename, funcName, &myputs);
+  auto address = hook(filename, funcName, &myputs);
+  assert(address !is null);  // Sucess for monkey-patching.
   original();
 }
