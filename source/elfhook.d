@@ -259,7 +259,6 @@ int symbolByName(int fd, Elf_Shdr* section, const char* name, ref Elf_Sym* symbo
 
   foreach (i; 0 .. amount) {
     if (!strcmp(name, &strings[symbols[i].st_name])) {
-      import std.stdio;
       symbol = cast(Elf_Sym*) malloc(Elf_Sym.sizeof);
       if (symbol is null) {
         return errno;
