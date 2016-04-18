@@ -246,10 +246,10 @@ void* elfHook(const char* filename, const void* address, const char* name, const
   scope(exit) close(fd);
 
   if (
-    sectionByType(fd, SHT_DYNSYM, dynsym) || dynsym is null ||
-    symbolByName(fd, dynsym, name, symbol, name_index) || symbol is null ||
-    sectionByName(fd, REL_PLT, rel_plt) || rel_plt is null ||
-    sectionByName(fd, REL_DYN, rel_dyn) || rel_dyn is null) {
+    sectionByType(fd, SHT_DYNSYM, dynsym) ||
+    symbolByName(fd, dynsym, name, symbol, name_index) ||
+    sectionByName(fd, REL_PLT, rel_plt) ||
+    sectionByName(fd, REL_DYN, rel_dyn)) {
     return original;
   }
 
