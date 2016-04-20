@@ -118,7 +118,7 @@ void sectionByIndex(int fd, const size_t index, ref Elf_Shdr* section)
 }
 
 
-int sectionByType(int fd, const size_t sectionType, ref Elf_Shdr* section)
+void sectionByType(int fd, const size_t sectionType, ref Elf_Shdr* section)
 {
   Elf_Ehdr* header;
   Elf_Shdr* sections;
@@ -138,14 +138,13 @@ int sectionByType(int fd, const size_t sectionType, ref Elf_Shdr* section)
       section = cast(Elf_Shdr*) malloc(Elf_Shdr.sizeof);
       errnoEnforce(section !is null, "failed to allocate section.");
       memcpy(section, sections + i, Elf_Shdr.sizeof);
-      break;
+      return;
     }
   }
-  return 0;
 }
 
 
-int sectionByName(int fd, const char* sectionName, ref Elf_Shdr* section)
+void sectionByName(int fd, const char* sectionName, ref Elf_Shdr* section)
 {
   Elf_Ehdr* header;
   Elf_Shdr* sections;
@@ -168,10 +167,9 @@ int sectionByName(int fd, const char* sectionName, ref Elf_Shdr* section)
       section = cast(Elf_Shdr*) malloc(Elf_Shdr.sizeof);
       errnoEnforce(section !is null, "failed to allocate section.");
       memcpy(section, sections + i, Elf_Shdr.sizeof);
-      break;
+      return;
     }
   }
-  return 0;
 }
 
 
@@ -245,13 +243,10 @@ void* elfHook(const char* filename, const void* address, const char* name, const
   }
   scope(exit) close(fd);
 
-  if (
-    sectionByType(fd, SHT_DYNSYM, dynsym) ||
-    symbolByName(fd, dynsym, name, symbol, name_index) ||
-    sectionByName(fd, REL_PLT, rel_plt) ||
-    sectionByName(fd, REL_DYN, rel_dyn)) {
-    return original;
-  }
+  sectionByType(fd, SHT_DYNSYM, dynsym);
+  symbolByName(fd, dynsym, name, symbol, name_index);
+  sectionByName(fd, REL_PLT, rel_plt);
+  sectionByName(fd, REL_DYN, rel_dyn);
 
   rel_plt_table = cast(Elf_Rel*) ((cast(size_t) address) + rel_plt.sh_addr);
   rel_plt_amount = rel_plt.sh_size / Elf_Rel.sizeof;
