@@ -307,7 +307,7 @@ body {
       mprotect(cast(void*) ((cast(size_t) name_address) & (((size_t.sizeof)-1) ^ (pagesize - 1))), pagesize, PROT_READ | PROT_WRITE);
 
       if (errno) {
-        return null;
+        errnoEnforce(false, "failed to mprotect.");
       }
 
       // calculate a new relative CALL (0xE8) instruction's argument for the substitutional function and write it down.
@@ -319,7 +319,7 @@ body {
       if (errno) {
         // then restore the original function address.
         *name_address = cast(size_t) original - cast(size_t) name_address - size_t.sizeof;
-        return null;
+        errnoEnforce(false, "failed to mprotect.");
       }
     }
   }
