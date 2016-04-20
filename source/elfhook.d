@@ -11,6 +11,7 @@ import core.stdc.string;
 import core.stdc.stdlib;
 import core.stdc.stdio;
 import core.stdc.errno;
+import core.exception;
 
 import std.exception;
 
@@ -43,7 +44,9 @@ else static assert(false, "Unsupported architecture.");
 void readHeader(int fd, ref Elf_Ehdr* header)
 {
   header = cast(Elf_Ehdr*) malloc(Elf_Ehdr.sizeof);
-  errnoEnforce(header !is null, "failed allocate Elf_Ehdr.");
+  if (header is null) {
+    throw new OutOfMemoryError("failed to allocate Elf_Ehdr");
+  }
   scope (failure) free(header);
 
   errnoEnforce(lseek(fd, 0, SEEK_SET) >= 0, "failed lseek(2).");
@@ -57,7 +60,9 @@ void readSectionTable(int fd, const Elf_Ehdr* header, ref Elf_Shdr* table)
 
   size_t size = header.e_shnum * Elf_Shdr.sizeof;
   table = cast(Elf_Shdr*) malloc(size);
-  errnoEnforce(table !is null, "failed to allocate Elf_shdr.");
+  if (table is null) {
+    throw new OutOfMemoryError("failed to allocate Elf_Shdr.");
+  }
   scope(failure) free(table);
 
   errnoEnforce(lseek(fd, header.e_shoff, SEEK_SET) >= 0, "failed lseek(2).");
@@ -70,7 +75,9 @@ void readStringTable(int fd, const Elf_Shdr* section, ref char* strings)
   assert(section !is null);
 
   strings = cast(char*) malloc(section.sh_size);
-  errnoEnforce(strings !is null, "failed to allocate string table.");
+  if (strings is null) {
+    throw new OutOfMemoryError("failed to allocate string table.");
+  }
   scope(failure) free(strings);
 
   errnoEnforce(lseek(fd, section.sh_offset, SEEK_SET) >= 0, "failed lseek(2).");
@@ -83,7 +90,9 @@ void readSymbolTable(int fd, const Elf_Shdr* section, ref Elf_Sym* table)
   assert(section !is null);
 
   table = cast (Elf_Sym*) malloc(section.sh_size);
-  errnoEnforce(table !is null, "failed to allocate symbol table.");
+  if (table is null) {
+    throw new OutOfMemoryError("failed to allocate symbol table.");
+  }
   scope(failure) free(table);
 
   errnoEnforce(lseek(fd, section.sh_offset, SEEK_SET) >= 0, "failed lseek(2).");
@@ -108,7 +117,9 @@ void sectionByIndex(int fd, const size_t index, ref Elf_Shdr* section)
 
   if (index < header.e_shnum) {
     section = cast(Elf_Shdr*) malloc(Elf_Shdr.sizeof);
-    errnoEnforce(section !is null, "failed to allocate section.");
+    if (section is null) {
+      throw new OutOfMemoryError("failed to allocate section.");
+    }
     memcpy(section, sections + index, Elf_Shdr.sizeof);
   }
   else {
@@ -136,7 +147,9 @@ void sectionByType(int fd, const size_t sectionType, ref Elf_Shdr* section)
   foreach (i; 0 .. header.e_shnum) {
     if (sectionType == sections[i].sh_type) {
       section = cast(Elf_Shdr*) malloc(Elf_Shdr.sizeof);
-      errnoEnforce(section !is null, "failed to allocate section.");
+      if (section is null) {
+        throw new OutOfMemoryError("failed to allocate section.");
+      }
       memcpy(section, sections + i, Elf_Shdr.sizeof);
       return;
     }
@@ -165,7 +178,9 @@ void sectionByName(int fd, const char* sectionName, ref Elf_Shdr* section)
   foreach (i; 0 .. header.e_shnum) {
     if (!strcmp(sectionName, &strings[sections[i].sh_name])) {
       section = cast(Elf_Shdr*) malloc(Elf_Shdr.sizeof);
-      errnoEnforce(section !is null, "failed to allocate section.");
+      if (section is null) {
+        throw new OutOfMemoryError("failed to allocate section.");
+      }
       memcpy(section, sections + i, Elf_Shdr.sizeof);
       return;
     }
@@ -197,7 +212,9 @@ int symbolByName(int fd, Elf_Shdr* section, const char* name, ref Elf_Sym* symbo
   foreach (i; 0 .. amount) {
     if (!strcmp(name, &strings[symbols[i].st_name])) {
       symbol = cast(Elf_Sym*) malloc(Elf_Sym.sizeof);
-      errnoEnforce(symbol !is null, "failed to allocate symbol.");
+      if (symbol is null) {
+        throw new OutOfMemoryError("failed to allocate symbol.");
+      }
       memcpy(symbol, symbols + i, Elf_Sym.sizeof);
       index = i;
       break;
