@@ -225,7 +225,12 @@ int symbolByName(int fd, Elf_Shdr* section, const char* name, ref Elf_Sym* symbo
 
 
 void* elfHook(const char* filename, const void* address, const char* name, const void* substitution)
-{
+  in {
+    assert(address !is null);
+    assert(name !is null);
+    assert(substitution !is null);
+  }
+body {
   size_t pagesize = sysconf(_SC_PAGESIZE);
 
   Elf_Shdr* dynsym;  // ".dynsym"
@@ -249,10 +254,6 @@ void* elfHook(const char* filename, const void* address, const char* name, const
   size_t *name_address = null;
 
   void *original;  //address of the symbol being substituted
-
-  if (address is null || name is null || substitution is null) {
-    return original;
-  }
 
   int fd = open(filename, O_RDONLY);
   if (fd < 0) {
