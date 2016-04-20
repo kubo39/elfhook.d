@@ -256,7 +256,7 @@ void* elfHook(const char* filename, const void* address, const char* name, const
 
   int fd = open(filename, O_RDONLY);
   if (fd < 0) {
-    return original;
+    errnoEnforce(false, "failed to open library.");
   }
   scope(exit) close(fd);
 
