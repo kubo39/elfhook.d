@@ -188,7 +188,7 @@ void sectionByName(int fd, const char* sectionName, ref Elf_Shdr* section)
 }
 
 
-int symbolByName(int fd, Elf_Shdr* section, const char* name, ref Elf_Sym* symbol, ref size_t index)
+void symbolByName(int fd, Elf_Shdr* section, const char* name, ref Elf_Sym* symbol, ref size_t index)
 {
   Elf_Shdr* stringsSection;
   char* strings;
@@ -217,10 +217,9 @@ int symbolByName(int fd, Elf_Shdr* section, const char* name, ref Elf_Sym* symbo
       }
       memcpy(symbol, symbols + i, Elf_Sym.sizeof);
       index = i;
-      break;
+      return;
     }
   }
-  return 0;
 }
 
 
