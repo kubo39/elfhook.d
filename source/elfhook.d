@@ -204,7 +204,8 @@ void sectionByName(int fd, const char* sectionName, ref Elf_Shdr* section)
 }
 
 
-void symbolByName(int fd, Elf_Shdr* section, const char* name, ref Elf_Sym* symbol, ref size_t index)
+void symbolByName(int fd, const Elf_Shdr* section, const char* name,
+                  ref Elf_Sym* symbol, ref size_t index)
 {
     Elf_Shdr *stringsSection;
     char *strings;
@@ -373,7 +374,7 @@ void* hook(const char* filename, const char* functionName, const void* substitut
         errnoEnforce(false, "failed to dlopen(3) by unknown reason.");
     }
 
-    void *address = cast(void*) *cast(const size_t *) handle;
+    const address = cast(void*) *cast(const size_t *) handle;
     assert(address !is null, "failed to get address that libarary loaded.");
     return elfHook(filename, address, functionName, substitutionAddress);
 }
