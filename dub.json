@@ -2,6 +2,6 @@
     "name": "elfhook",
     "authors": ["kubo39"],
     "license": "MIT",
-    "buildType": "staticLibrary",
+    "buildType": "library",
     "targetPath": "build"
 }
