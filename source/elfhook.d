@@ -245,14 +245,11 @@ void symbolByName(int fd, const Elf_Shdr* section, const char* name,
 
 
 void* elfHook(const char* filename, const void* address, const char* name, const void* substitution)
-    in
-    {
-        assert(address !is null);
-        assert(name !is null);
-        assert(substitution !is null);
-    }
-body
 {
+    assert(address !is null);
+    assert(name !is null);
+    assert(substitution !is null);
+
     size_t pagesize = sysconf(_SC_PAGESIZE);
 
     Elf_Shdr *dynsym;  // ".dynsym"
