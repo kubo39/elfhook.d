@@ -55,7 +55,7 @@ void readHeader(int fd, ref Elf_Ehdr* header)
 }
 
 
-void readSectionTable(int fd, const Elf_Ehdr* header, ref Elf_Shdr* table)
+void readSectionTable(int fd, in Elf_Ehdr* header, ref Elf_Shdr* table)
 {
     assert(header !is null);
 
@@ -72,7 +72,7 @@ void readSectionTable(int fd, const Elf_Ehdr* header, ref Elf_Shdr* table)
 }
 
 
-void readStringTable(int fd, const Elf_Shdr* section, ref char* strings)
+void readStringTable(int fd, in Elf_Shdr* section, ref char* strings)
 {
     assert(section !is null);
 
@@ -88,7 +88,7 @@ void readStringTable(int fd, const Elf_Shdr* section, ref char* strings)
 }
 
 
-void readSymbolTable(int fd, const Elf_Shdr* section, ref Elf_Sym* table)
+void readSymbolTable(int fd, in Elf_Shdr* section, ref Elf_Sym* table)
 {
     assert(section !is null);
 
@@ -104,7 +104,7 @@ void readSymbolTable(int fd, const Elf_Shdr* section, ref Elf_Sym* table)
 }
 
 
-void sectionByIndex(int fd, const size_t index, ref Elf_Shdr* section)
+void sectionByIndex(int fd, in size_t index, ref Elf_Shdr* section)
 {
     Elf_Ehdr *header;
     Elf_Shdr *sections;
@@ -137,7 +137,7 @@ void sectionByIndex(int fd, const size_t index, ref Elf_Shdr* section)
 }
 
 
-void sectionByType(int fd, const size_t sectionType, ref Elf_Shdr* section)
+void sectionByType(int fd, in size_t sectionType, ref Elf_Shdr* section)
 {
     Elf_Ehdr *header;
     Elf_Shdr *sections;
@@ -169,7 +169,7 @@ void sectionByType(int fd, const size_t sectionType, ref Elf_Shdr* section)
 }
 
 
-void sectionByName(int fd, const char* sectionName, ref Elf_Shdr* section)
+void sectionByName(int fd, in char* sectionName, ref Elf_Shdr* section)
 {
     Elf_Ehdr *header;
     Elf_Shdr *sections;
@@ -204,7 +204,7 @@ void sectionByName(int fd, const char* sectionName, ref Elf_Shdr* section)
 }
 
 
-void symbolByName(int fd, const Elf_Shdr* section, const char* name,
+void symbolByName(int fd, in Elf_Shdr* section, in char* name,
                   ref Elf_Sym* symbol, ref size_t index)
 {
     Elf_Shdr *stringsSection;
@@ -244,7 +244,7 @@ void symbolByName(int fd, const Elf_Shdr* section, const char* name,
 }
 
 
-void* elfHook(const char* filename, const void* address, const char* name, const void* substitution)
+void* elfHook(in char* filename, in void* address, in char* name, in void* substitution)
 {
     assert(address !is null);
     assert(name !is null);
@@ -356,7 +356,7 @@ void* elfHook(const char* filename, const void* address, const char* name, const
 }
 
 
-void* hook(const char* filename, const char* functionName, const void* substitutionAddress)
+void* hook(in char* filename, in char* functionName, in void* substitutionAddress)
 {
     assert(filename !is null, "No file given.");
 
