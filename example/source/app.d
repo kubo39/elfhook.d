@@ -13,12 +13,7 @@ void myputs()
 
 void main()
 {
-    import std.file : getcwd;
-
-    const filename = getcwd() ~ "/liboriginal.so";
-    const char* funcName = "puts\0".ptr;
-
-    auto address = hook(filename, funcName, &myputs);
-    assert(address !is null);  // Sucess for monkey-patching.
+    auto address = hook("liboriginal.so", "puts", &myputs);
+    assert(address !is null);
     original();
 }

@@ -359,12 +359,12 @@ void* elfHook(in char* filename, in void* address, in char* name, in void* subst
 }
 
 
-void* hook(in string filename, in char* functionName, in void* substitutionAddress)
+void* hook(in string filename, in string functionName, in void* substitutionAddress)
 {
     assert(filename !is null, "No file given.");
 
     auto lib = new SharedLibrary(filename, RTLD_LAZY);
     const address = lib.getLoadedAddr;
     assert(address !is null, "failed to get address that libarary loaded.");
-    return elfHook(filename.toStringz, address, functionName, substitutionAddress);
+    return elfHook(filename.toStringz, address, functionName.toStringz, substitutionAddress);
 }
