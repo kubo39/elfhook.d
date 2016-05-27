@@ -6,5 +6,6 @@
     "targetPath": "build",
     "dependencies": {
         "sharedlib": "~>0.1.0"
-    }
+    },
+    "description": "monkey patching for shared object."
 }
