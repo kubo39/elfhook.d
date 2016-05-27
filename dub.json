@@ -3,5 +3,8 @@
     "authors": ["kubo39"],
     "license": "MIT",
     "buildType": "library",
-    "targetPath": "build"
+    "targetPath": "build",
+    "dependencies": {
+        "sharedlib": "~>0.1.0"
+    }
 }

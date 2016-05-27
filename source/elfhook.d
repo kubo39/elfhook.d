@@ -3,7 +3,7 @@ module elfhook;
 
 import core.sys.linux.elf;
 import core.sys.posix.unistd;
-import core.sys.posix.dlfcn;
+// import core.sys.posix.dlfcn;
 import core.sys.posix.sys.mman;
 import core.sys.posix.fcntl;
 
@@ -14,6 +14,10 @@ import core.stdc.errno;
 import core.exception;
 
 import std.exception;
+import std.string : toStringz;
+
+import sharedlib;
+
 
 version(linux):
 @system:
@@ -356,22 +360,12 @@ void* elfHook(in char* filename, in void* address, in char* name, in void* subst
 }
 
 
-void* hook(in char* filename, in char* functionName, in void* substitutionAddress)
+void* hook(in string filename, in char* functionName, in void* substitutionAddress)
 {
     assert(filename !is null, "No file given.");
 
-    void *handle = dlopen(filename, RTLD_LAZY);
-    if (handle is null)
-    {
-        const char* errorMsg = dlerror();
-        if (errorMsg !is null)
-        {
-            errnoEnforce(false, cast(string) errorMsg[0 .. strlen(errorMsg)]);
-        }
-        errnoEnforce(false, "failed to dlopen(3) by unknown reason.");
-    }
-
-    const address = cast(void*) *cast(const size_t *) handle;
+    auto lib = new SharedLibrary(filename, RTLD_LAZY);
+    const address = lib.getLoadedAddr;
     assert(address !is null, "failed to get address that libarary loaded.");
-    return elfHook(filename, address, functionName, substitutionAddress);
+    return elfHook(filename.toStringz, address, functionName, substitutionAddress);
 }
