@@ -3,7 +3,6 @@ module elfhook;
 
 import core.sys.linux.elf;
 import core.sys.posix.unistd;
-// import core.sys.posix.dlfcn;
 import core.sys.posix.sys.mman;
 import core.sys.posix.fcntl;
 
