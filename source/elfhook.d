@@ -5,11 +5,7 @@ import core.sys.linux.elf;
 import core.sys.posix.unistd;
 import core.sys.posix.sys.mman;
 
-import core.stdc.string;
-import core.stdc.stdlib;
-import core.stdc.stdio;
 import core.stdc.errno;
-import core.exception;
 
 import std.exception;
 import std.string : toStringz;
