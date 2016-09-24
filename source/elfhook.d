@@ -41,18 +41,18 @@ void* elfHook(ELF elf, in void* address, in string name, in void* substitution)
 
     size_t pagesize = sysconf(_SC_PAGESIZE);
 
-    ELFSection dynsym;  // ".dynsym"
-    ELFSection rel_plt;  // ".rela.plt"
-    ELFSection rel_dyn;  // ".rela.dyn"
-    ELFSymbol symbol;  //symbol table entry for symbol named "name"
+    ELFSection dynsym;
+    ELFSection rel_plt;
+    ELFSection rel_dyn;
+    ELFSymbol symbol;
 
     Elf_Rel *rel_plt_table;  //array with ".rel.plt" entries
     Elf_Rel *rel_dyn_table;  //array with ".rel.dyn" entries
 
-    size_t name_index = void;
-    size_t rel_plt_amount = void;  // amount of ".rel.plt" entries
-    size_t rel_dyn_amount = void;  // amount of ".rel.dyn" entries
-    size_t *name_address = null;
+    size_t name_index;
+    size_t rel_plt_amount;  // amount of ".rel.plt" entries
+    size_t rel_dyn_amount;  // amount of ".rel.dyn" entries
+    size_t *name_address;
 
     void *original;  //address of the symbol being substituted
 
@@ -120,18 +120,14 @@ L0:
             name_address = cast(size_t*) ((cast(size_t) address) + rel_dyn_table[i].r_offset);
 
             if (!original)
-            {
                 // calculate an address of the original function by a relative CALL (0xE8) instruction's argument.
                 original = cast(void*) (*name_address + cast(size_t) name_address + size_t.sizeof);
-            }
 
             // mark a memory page that contains the relocation as writable.
             mprotect(cast(void*) ((cast(size_t) name_address) & (((size_t.sizeof)-1) ^ (pagesize - 1))), pagesize, PROT_READ | PROT_WRITE);
 
             if (errno)
-            {
                 errnoEnforce(false, "failed to mprotect.");
-            }
 
             // calculate a new relative CALL (0xE8) instruction's argument for the substitutional function and write it down.
             *name_address = cast(size_t) substitution - cast(size_t) name_address - size_t.sizeof;
