@@ -41,18 +41,18 @@ void* elfHook(ELF elf, const void* address, string name, void* substitution)
 
     size_t pagesize = sysconf(_SC_PAGESIZE);
 
-    ELFSection dynsym;  // ".dynsym"
-    ELFSection rel_plt;  // ".rela.plt"
-    ELFSection rel_dyn;  // ".rela.dyn"
-    ELFSymbol symbol;  //symbol table entry for symbol named "name"
+    ELFSection dynsym;
+    ELFSection rel_plt;
+    ELFSection rel_dyn;
+    ELFSymbol symbol;
 
     Elf_Rel *rel_plt_table;  //array with ".rel.plt" entries
     Elf_Rel *rel_dyn_table;  //array with ".rel.dyn" entries
 
-    size_t name_index = void;
-    size_t rel_plt_amount = void;  // amount of ".rel.plt" entries
-    size_t rel_dyn_amount = void;  // amount of ".rel.dyn" entries
-    size_t *name_address = null;
+    size_t name_index;
+    size_t rel_plt_amount;  // amount of ".rel.plt" entries
+    size_t rel_dyn_amount;  // amount of ".rel.dyn" entries
+    size_t *name_address;
 
     void *original;  //address of the symbol being substituted
 
