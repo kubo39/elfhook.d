@@ -1,4 +1,6 @@
-// taken from http://www.codeproject.com/Articles/70302/Redirecting-functions-in-shared-ELF-libraries.
+// elfhook.d - monkey patching for shared object by Dynamic Function Redirecting technique
+// same as [ELF-Hook](http://www.codeproject.com/Articles/70302/Redirecting-functions-in-shared-ELF-libraries).
+
 module elfhook;
 
 import core.sys.linux.elf;
