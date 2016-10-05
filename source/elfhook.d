@@ -10,7 +10,7 @@ import core.stdc.errno;
 import std.exception;
 import std.string : toStringz;
 import std.conv : to;
-import std.range : only;
+import std.range : only, enumerate;
 
 import sharedlib;
 import elf;
@@ -33,7 +33,7 @@ else version(X86)
 else static assert(false, "Unsupported architecture.");
 
 
-void* elfHook(ELF elf, in void* address, in string name, in void* substitution)
+void* elfHook(ELF elf, const void* address, string name, void* substitution)
 {
     assert(address !is null);
     assert(name !is null);
@@ -69,8 +69,7 @@ void* elfHook(ELF elf, in void* address, in string name, in void* substitution)
     foreach (section; only(".symtab", ".dynsym"))
     {
         auto s = elf.getSection(section);
-        int i = 0;
-        foreach (sym; SymbolTable(s).symbols)
+        foreach (i, sym; SymbolTable(s).symbols.enumerate)
         {
             if (name == sym.name)
             {
@@ -78,7 +77,6 @@ void* elfHook(ELF elf, in void* address, in string name, in void* substitution)
                 name_index = cast(size_t) i;
                 goto L0;
             }
-            ++i;
         }
     }
 
@@ -120,18 +118,14 @@ L0:
             name_address = cast(size_t*) ((cast(size_t) address) + rel_dyn_table[i].r_offset);
 
             if (!original)
-            {
                 // calculate an address of the original function by a relative CALL (0xE8) instruction's argument.
                 original = cast(void*) (*name_address + cast(size_t) name_address + size_t.sizeof);
-            }
 
             // mark a memory page that contains the relocation as writable.
             mprotect(cast(void*) ((cast(size_t) name_address) & (((size_t.sizeof)-1) ^ (pagesize - 1))), pagesize, PROT_READ | PROT_WRITE);
 
             if (errno)
-            {
                 errnoEnforce(false, "failed to mprotect.");
-            }
 
             // calculate a new relative CALL (0xE8) instruction's argument for the substitutional function and write it down.
             *name_address = cast(size_t) substitution - cast(size_t) name_address - size_t.sizeof;
@@ -151,7 +145,7 @@ L0:
 }
 
 
-void* hook(in string filename, in string functionName, in void* substitutionAddress)
+void* hook(string filename, string functionName, void* substitutionAddress)
 {
     assert(filename !is null, "No file given.");
 
