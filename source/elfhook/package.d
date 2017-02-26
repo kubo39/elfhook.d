@@ -14,7 +14,8 @@ import std.string : toStringz;
 import std.conv : to;
 import std.range : only, enumerate;
 
-import sharedlib;
+import elfhook.library;
+
 import elf;
 import elf.low;
 

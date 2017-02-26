@@ -1,10 +1,7 @@
 {
 	"fileVersion": 1,
 	"versions": {
-		"sharedlib": "0.1.0",
 		"elf-d": "0.2.1",
-		"elfhook": {
-			"path": "../"
-		}
+		"elfhook": {"path":"../"}
 	}
 }
