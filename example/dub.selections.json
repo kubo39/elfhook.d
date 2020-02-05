@@ -1,7 +1,7 @@
 {
 	"fileVersion": 1,
 	"versions": {
-		"elf-d": "0.2.1",
+		"elf-d": "0.2.5",
 		"elfhook": {"path":"../"}
 	}
 }
